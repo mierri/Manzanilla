@@ -256,12 +256,3 @@ Abre el navegador en **http://localhost:5173**.
 
 El admin puede crear médicos y pacientes desde el panel. Los médicos y pacientes reciben un correo de verificación al registrarse (si el correo está configurado).
 
----
-
-## 9. Notas de seguridad para producción
-
-- Cambia `APP_DEBUG=false` y `APP_ENV=production`.
-- Cambia la contraseña del administrador inmediatamente.
-- Usa HTTPS (nginx/Apache con Let's Encrypt).
-- Restringe `FRONTEND_URL` al dominio real.
-- Configura Redis con autenticación (`requirepass` en `redis.conf`).
