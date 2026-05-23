@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 64 64" fill="none">
+
+  <g transform="translate(32 32)">
+
+    <!-- Pétalos -->
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(0)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(45)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(90)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(135)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(180)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(225)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(270)"></ellipse>
+
+    <ellipse cx="0" cy="-18" rx="7" ry="14" fill="#FFFCF6" stroke="#2B2520" stroke-width="1.5" transform="rotate(315)"></ellipse>
+
+    <!-- Centro -->
+    <circle cx="0" cy="0" r="9" fill="#EFD68E" stroke="#2B2520" stroke-width="1.5"></circle>
+
+  </g>
+</svg>
