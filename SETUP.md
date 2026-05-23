@@ -97,17 +97,14 @@ FRONTEND_URL=http://localhost:5173
 
 > **Contraseña de aplicación de Gmail:** ve a tu cuenta Google → Seguridad → Verificación en dos pasos → Contraseñas de aplicación. Genera una para "Correo / Otro". Copia las 16 letras (sin espacios) como `MAIL_PASSWORD`.
 
-### 2.4 Crear la base de datos en MySQL
-
-```sql
-CREATE DATABASE manzanilla CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
-
-### 2.5 Ejecutar migraciones
+### 2.4 Crear la base de datos y ejecutar migraciones
 
 ```bash
+php artisan db:create
 php artisan migrate
 ```
+
+`db:create` crea la base de datos automáticamente si no existe — no necesitas abrir MySQL manualmente.
 
 Esto crea todas las tablas **y** el usuario administrador automáticamente:
 
