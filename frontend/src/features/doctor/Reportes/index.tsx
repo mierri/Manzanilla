@@ -20,6 +20,7 @@ export default function Reportes({ onNavigate: _onNavigate }: Props) {
   const [appts,      setAppts]     = useState<Appointment[]>([]);
   const [loading,    setLoading]   = useState(true);
   const [pdfLoading, setPdfLoading]= useState(false);
+  const [historyPatientId, setHistoryPatientId] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([reportsApi.patients(), reportsApi.calendar()])
@@ -34,7 +35,7 @@ export default function Reportes({ onNavigate: _onNavigate }: Props) {
   const handleDownloadPDF = async () => {
     setPdfLoading(true);
     try {
-      await downloadReportPDF({ patients, appts, type: tab });
+      await downloadReportPDF({ patients, appts, type: tab, historyPatientId });
       toast.push({ tone: 'sage', title: 'PDF descargado', body: 'Reporte guardado en tus descargas' });
     } catch (e) {
       console.error(e);
@@ -88,7 +89,7 @@ export default function Reportes({ onNavigate: _onNavigate }: Props) {
           {tab === 'overview'   && <OverviewReport   patients={patients} appts={appts} />}
           {tab === 'pacientes'  && <PatientListReport patients={patients} reportNum={reportNum} />}
           {tab === 'calendario' && <CalendarReport    appts={appts} />}
-          {tab === 'historia'   && <HistoryReport     patients={patients} />}
+          {tab === 'historia'   && <HistoryReport     patients={patients} onPatientSelect={setHistoryPatientId} />}
         </>
       )}
     </div>

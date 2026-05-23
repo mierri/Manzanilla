@@ -7,15 +7,16 @@ import { PAvatar } from './PAvatar';
 import { DocField } from './DocField';
 import { DocVital } from './DocVital';
 
-interface Props { patients: Patient[]; }
+interface Props { patients: Patient[]; onPatientSelect?: (id: number) => void; }
 
-export function HistoryReport({ patients }: Props) {
+export function HistoryReport({ patients, onPatientSelect }: Props) {
   const [selId,   setSelId]  = useState<number | null>(patients[0]?.id ?? null);
   const [report,  setReport] = useState<{ patient: Patient; records: ClinicalRecord[] } | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (selId === null) return;
+    onPatientSelect?.(selId);
     setLoading(true);
     reportsApi.history(selId).then(r => setReport(r.data)).finally(() => setLoading(false));
   }, [selId]);
