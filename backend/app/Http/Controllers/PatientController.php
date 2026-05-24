@@ -50,7 +50,7 @@ class PatientController extends Controller
         $patient = User::where('role', 'paciente')
             ->withCount(['clinicalRecords as notes_count'])
             ->findOrFail($id);
-        return response()->json($patient);
+        return response()->json($patient->load(['patientProfile']));
     }
 
     public function store(Request $request): JsonResponse
@@ -91,7 +91,7 @@ class PatientController extends Controller
             'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
         ]);
 
-        return response()->json($patient->fresh(), 201);
+        return response()->json($patient->fresh()->load(['patientProfile']), 201);
     }
 
     public function update(Request $request, int $id): JsonResponse
@@ -132,7 +132,7 @@ class PatientController extends Controller
             );
         }
 
-        return response()->json($patient->fresh());
+        return response()->json($patient->fresh()->load(['patientProfile']));
     }
 
     public function destroy(int $id): JsonResponse

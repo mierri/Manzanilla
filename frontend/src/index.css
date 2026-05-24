@@ -200,7 +200,42 @@ body.role-admin::before {
 @media print {
   body::before { display: none; }
   .no-print { display: none !important; }
-  body { background: white; }
+  body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  /* Ocultar shell de navegación */
+  .app-shell > aside,
+  .mobile-topbar,
+  .page-header button,
+  .resp-tab-bar { display: none !important; }
+
+  /* El panel principal sin padding extra */
+  .main-pane { padding: 0 !important; }
+
+  /* Tarjeta del reporte: ocupa toda la hoja */
+  .print-doc {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Evitar que estas piezas se corten a mitad */
+  .print-doc > div,
+  .print-doc img,
+  .resp-doc-vitals,
+  .resp-doc-fields { page-break-inside: avoid; break-inside: avoid; }
+
+  /* El banner del historial (con la flor.svg) nunca se parte */
+  .print-doc > div:first-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* Cada consulta empieza preferiblemente en el mismo bloque */
+  .print-doc [style*="padding-bottom: 28px"] { page-break-inside: avoid; break-inside: avoid; }
+
+  /* Márgenes de página */
+  @page { margin: 18mm 20mm; }
 }
 
 @media (max-width: 1100px) {

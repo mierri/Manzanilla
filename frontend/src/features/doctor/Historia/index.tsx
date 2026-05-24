@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   FileText, Thermometer, Weight, Ruler, Heart, Activity,
   ArrowLeft, Lock, Check, Sparkles, Clock, CalendarDays,
@@ -14,15 +15,15 @@ import { PatientPickerCard } from './components/PatientPickerCard';
 import { RecordTimeline } from './components/RecordTimeline';
 import { useAutoSave } from './hooks/useAutoSave';
 
-interface Props {
-  onNavigate: (id: string, params?: Record<string, unknown>) => void;
-  patientId?: number;
-  appointmentId?: number;
-}
-
 const EMPTY_VITALS = { temperature: '', weight: '', height: '', systolic: '', diastolic: '', heart_rate: '' };
 
-export default function Historia({ onNavigate, patientId: initialId, appointmentId: initialApptId }: Props) {
+export default function Historia() {
+  const { patientId: patientIdParam } = useParams<{ patientId?: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const initialId     = patientIdParam ? Number(patientIdParam) : undefined;
+  const initialApptId = searchParams.get('appointmentId') ? Number(searchParams.get('appointmentId')) : undefined;
   const toast = useToast();
   const [patients,   setPatients]   = useState<Patient[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(initialId ?? null);
@@ -126,7 +127,7 @@ export default function Historia({ onNavigate, patientId: initialId, appointment
       <div className="page-header">
         <div>
           <button className="btn-ghost" style={{ marginBottom: 8, fontSize: 13, padding: '4px 10px', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-            onClick={() => onNavigate('pacientes')}>
+            onClick={() => navigate('/pacientes')}>
             <ArrowLeft size={14} /> Volver al directorio
           </button>
           <h1 className="page-title">

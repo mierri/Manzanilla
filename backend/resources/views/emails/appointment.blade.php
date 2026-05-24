@@ -105,7 +105,7 @@
 
         <!-- Footer -->
         <tr><td style="background:#F7F3ED;padding:20px 40px;text-align:center;">
-          <p style="font-size:12px;color:#B0A090;margin:0;">© {{ date('Y') }} Consultorio Manzanilla · GDL</p>
+          <p style="font-size:12px;color:#B0A090;margin:0;">© {{ date('Y') }} Consultorio Manzanilla · MID</p>
         </td></tr>
 
       </table>

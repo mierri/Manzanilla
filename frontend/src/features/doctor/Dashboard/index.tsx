@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, FileText, Clock, Plus, Sparkles } from 'lucide-react';
 import { useAuth } from '@/app/AuthContext';
 import { useToast } from '@/app/ToastContext';
@@ -11,9 +12,8 @@ import { ScheduleRow } from './components/ScheduleRow';
 import { NotifRow } from './components/NotifRow';
 import { useDashboardData } from './hooks/useDashboardData';
 
-interface Props { onNavigate: (id: string, params?: Record<string, unknown>) => void; }
-
-export default function DoctorDashboard({ onNavigate }: Props) {
+export default function DoctorDashboard() {
+  const navigate = useNavigate();
   const { user }  = useAuth();
   const toast     = useToast();
   const { todayAppts, setTodayAppts, tomorrowAppts, notifs, setNotifs, patients, loading } = useDashboardData();
@@ -55,9 +55,9 @@ export default function DoctorDashboard({ onNavigate }: Props) {
   const hoursToday = (todayAppts.reduce((s, a) => s + (a.duration ?? 0), 0) / 60).toFixed(1);
 
   const stats = [
-    { label: 'Citas hoy',              value: todayAppts.length, sub: `${todayAppts.filter(a => a.status === 'confirmed').length} confirmadas`,         Icon: Calendar, tone: 'peach',    action: () => onNavigate('citas') },
-    { label: 'Pacientes activos',       value: patients.length,   sub: 'Ver directorio',                                                                 Icon: Users,    tone: 'sage',     action: () => onNavigate('pacientes') },
-    { label: 'Pendientes de relatoría', value: todayAppts.filter(a => a.status === 'confirmed').length, sub: 'Consultas confirmadas de hoy',              Icon: FileText, tone: 'butter',   action: () => onNavigate('historia') },
+    { label: 'Citas hoy',              value: todayAppts.length, sub: `${todayAppts.filter(a => a.status === 'confirmed').length} confirmadas`,         Icon: Calendar, tone: 'peach',    action: () => navigate('/citas') },
+    { label: 'Pacientes activos',       value: patients.length,   sub: 'Ver directorio',                                                                 Icon: Users,    tone: 'sage',     action: () => navigate('/pacientes') },
+    { label: 'Pendientes de relatoría', value: todayAppts.filter(a => a.status === 'confirmed').length, sub: 'Consultas confirmadas de hoy',              Icon: FileText, tone: 'butter',   action: () => navigate('/historia') },
     { label: 'Horas en consulta',       value: hoursToday,        sub: `${todayAppts.length} citas programadas`,                                          Icon: Clock,    tone: 'lavender', action: () => {} },
   ];
 
@@ -78,7 +78,7 @@ export default function DoctorDashboard({ onNavigate }: Props) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-secondary" onClick={() => onNavigate('citas')}><Calendar size={16} /> Ver agenda</button>
+          <button className="btn btn-secondary" onClick={() => navigate('/citas')}><Calendar size={16} /> Ver agenda</button>
           <button className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={16} /> Nueva cita</button>
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function DoctorDashboard({ onNavigate }: Props) {
               <div className="section-title" style={{ marginBottom: 2 }}>Hoy <span className="count">{todayAppts.length} citas</span></div>
               <div style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Tu día de un vistazo</div>
             </div>
-            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => onNavigate('citas')}>Ver agenda completa</button>
+            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => navigate('/citas')}>Ver agenda completa</button>
           </div>
           <div style={{ padding: '0 14px 4px' }}>
             {loading ? (
@@ -119,7 +119,7 @@ export default function DoctorDashboard({ onNavigate }: Props) {
               todayAppts.slice(0, 5).map((a, i) => (
                 <ScheduleRow key={a.id} appt={a}
                   accent={(['peach','sage','butter','lavender'] as const)[i % 4]}
-                  onClick={() => onNavigate('historia', { patientId: a.patient_id ?? undefined, appointmentId: a.id })}
+                  onClick={() => navigate(`/historia/${a.patient_id}?appointmentId=${a.id}`)}
                 />
               ))
             )}
@@ -138,7 +138,7 @@ export default function DoctorDashboard({ onNavigate }: Props) {
                 </div>
               ))}
               {tomorrowAppts.length > 3 && (
-                <button className="btn-ghost" style={{ fontSize: 12, marginTop: 8, padding: '4px 0' }} onClick={() => onNavigate('citas')}>
+                <button className="btn-ghost" style={{ fontSize: 12, marginTop: 8, padding: '4px 0' }} onClick={() => navigate('/citas')}>
                   +{tomorrowAppts.length - 3} más mañana
                 </button>
               )}
@@ -199,12 +199,12 @@ export default function DoctorDashboard({ onNavigate }: Props) {
             <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               Pacientes recientes <span className="count">últimos registrados</span>
             </span>
-            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => onNavigate('pacientes')}>Ver todos</button>
+            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => navigate('/pacientes')}>Ver todos</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }} className="resp-patients-5">
             {recentPatients.map(p => (
               <button key={p.id} className="card lift" style={{ padding: 18, textAlign: 'left', width: '100%' }}
-                onClick={() => onNavigate('historia', { patientId: p.id })}>
+                onClick={() => navigate(`/historia/${p.id}`)}>
                 <PatientAvatar name={p.name} id={p.id} size={44} />
                 <div className="serif" style={{ fontSize: 15, fontWeight: 500, marginTop: 10, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {p.name.split(' ').slice(0, 2).join(' ')}

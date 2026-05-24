@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Stethoscope, Users, Calendar, BarChart2, Plus, Clock } from 'lucide-react';
 import { useAuth } from '@/app/AuthContext';
 import { adminApi } from '@/lib/api';
@@ -6,15 +7,14 @@ import { cached } from '@/lib/cache';
 import { fmtTime } from '@/lib/utils';
 import type { Appointment } from '@/types';
 
-interface Props { onNavigate: (id: string) => void; }
-
 interface Stats {
   doctor_count: number; patient_count: number;
   today_count: number;  month_count: number;
   today_list: Appointment[];
 }
 
-export default function AdminDashboard({ onNavigate }: Props) {
+export default function AdminDashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [stats,   setStats]   = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,9 +30,9 @@ export default function AdminDashboard({ onNavigate }: Props) {
   const greeting = hour < 12 ? 'Buenos días' : hour < 18 ? 'Buenas tardes' : 'Buenas noches';
 
   const statCards = [
-    { label: 'Médicos activos',   value: stats?.doctor_count,  sub: 'en el consultorio', Icon: Stethoscope, tone: 'lavender', action: () => onNavigate('medicos')   },
-    { label: 'Pacientes totales', value: stats?.patient_count, sub: 'registrados',        Icon: Users,       tone: 'sage',     action: () => onNavigate('pacientes') },
-    { label: 'Citas hoy',         value: stats?.today_count,   sub: 'todos los médicos',  Icon: Calendar,    tone: 'peach',    action: () => onNavigate('agenda')    },
+    { label: 'Médicos activos',   value: stats?.doctor_count,  sub: 'en el consultorio', Icon: Stethoscope, tone: 'lavender', action: () => navigate('/medicos')   },
+    { label: 'Pacientes totales', value: stats?.patient_count, sub: 'registrados',        Icon: Users,       tone: 'sage',     action: () => navigate('/pacientes') },
+    { label: 'Citas hoy',         value: stats?.today_count,   sub: 'todos los médicos',  Icon: Calendar,    tone: 'peach',    action: () => navigate('/agenda')    },
     { label: 'Citas este mes',    value: stats?.month_count,   sub: 'en el consultorio',  Icon: BarChart2,   tone: 'butter',   action: () => {}                      },
   ];
 
@@ -44,8 +44,8 @@ export default function AdminDashboard({ onNavigate }: Props) {
           <p className="page-subtitle">Panel de administración · {now.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-secondary" onClick={() => onNavigate('medicos')}><Stethoscope size={16} /> Médicos</button>
-          <button className="btn btn-primary" onClick={() => onNavigate('medicos')}><Plus size={16} /> Nuevo médico</button>
+          <button className="btn btn-secondary" onClick={() => navigate('/medicos')}><Stethoscope size={16} /> Médicos</button>
+          <button className="btn btn-primary" onClick={() => navigate('/medicos')}><Plus size={16} /> Nuevo médico</button>
         </div>
       </div>
 
@@ -70,7 +70,7 @@ export default function AdminDashboard({ onNavigate }: Props) {
               <div className="section-title" style={{ marginBottom: 2 }}>Citas de hoy <span className="count">{stats?.today_list.length ?? 0} en total</span></div>
               <div style={{ fontSize: 13, color: 'var(--ink-soft)' }}>Todos los médicos · {now.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' })}</div>
             </div>
-            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => onNavigate('agenda')}>Ver agenda global</button>
+            <button className="btn-ghost" style={{ fontSize: 13 }} onClick={() => navigate('/agenda')}>Ver agenda global</button>
           </div>
           <div style={{ padding: '0 14px 18px' }}>
             {loading ? (
@@ -101,9 +101,9 @@ export default function AdminDashboard({ onNavigate }: Props) {
             <div className="section-title" style={{ marginBottom: 16 }}>Acciones rápidas</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { label: 'Agregar médico', desc: 'Crear nueva cuenta de médico',   Icon: Stethoscope, action: () => onNavigate('medicos')   },
-                { label: 'Ver pacientes', desc: 'Directorio de pacientes',          Icon: Users,       action: () => onNavigate('pacientes') },
-                { label: 'Agenda global', desc: 'Todas las citas del consultorio',  Icon: Calendar,    action: () => onNavigate('agenda')    },
+                { label: 'Agregar médico', desc: 'Crear nueva cuenta de médico',   Icon: Stethoscope, action: () => navigate('/medicos')   },
+                { label: 'Ver pacientes', desc: 'Directorio de pacientes',          Icon: Users,       action: () => navigate('/pacientes') },
+                { label: 'Agenda global', desc: 'Todas las citas del consultorio',  Icon: Calendar,    action: () => navigate('/agenda')    },
               ].map((q, i) => (
                 <button key={i} onClick={q.action}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, textAlign: 'left', width: '100%', background: 'var(--card-tint)', transition: 'all .2s var(--ease)' }}

@@ -23,9 +23,6 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
-    // Always eager-load profiles so accessors work without N+1
-    protected $with = ['doctorProfile', 'patientProfile'];
-
     // Expose profile fields at top level for frontend compatibility
     protected $appends = [
         'speciality', 'license_number', 'bio',
@@ -98,51 +95,52 @@ class User extends Authenticatable
     public function isAdmin(): bool   { return $this->role === 'admin'; }
 
     // ── Doctor profile accessors (flat for frontend compat) ───
+    // Guard with relationLoaded() so listing endpoints never trigger lazy loads.
 
     public function getSpecialityAttribute(): ?string
     {
-        return $this->doctorProfile?->speciality;
+        return $this->relationLoaded('doctorProfile') ? $this->doctorProfile?->speciality : null;
     }
 
     public function getLicenseNumberAttribute(): ?string
     {
-        return $this->doctorProfile?->license_number;
+        return $this->relationLoaded('doctorProfile') ? $this->doctorProfile?->license_number : null;
     }
 
     public function getBioAttribute(): ?string
     {
-        return $this->doctorProfile?->bio;
+        return $this->relationLoaded('doctorProfile') ? $this->doctorProfile?->bio : null;
     }
 
     // ── Patient profile accessors (flat for frontend compat) ──
 
     public function getAgeAttribute(): ?int
     {
-        return $this->patientProfile?->age;
+        return $this->relationLoaded('patientProfile') ? $this->patientProfile?->age : null;
     }
 
     public function getAddressAttribute(): ?string
     {
-        return $this->patientProfile?->address;
+        return $this->relationLoaded('patientProfile') ? $this->patientProfile?->address : null;
     }
 
     public function getBloodTypeAttribute(): ?string
     {
-        return $this->patientProfile?->blood_type;
+        return $this->relationLoaded('patientProfile') ? $this->patientProfile?->blood_type : null;
     }
 
     public function getAllergiesAttribute(): ?string
     {
-        return $this->patientProfile?->allergies;
+        return $this->relationLoaded('patientProfile') ? $this->patientProfile?->allergies : null;
     }
 
     public function getEmergencyContactNameAttribute(): ?string
     {
-        return $this->patientProfile?->emergency_contact_name;
+        return $this->relationLoaded('patientProfile') ? $this->patientProfile?->emergency_contact_name : null;
     }
 
     public function getEmergencyContactPhoneAttribute(): ?string
     {
-        return $this->patientProfile?->emergency_contact_phone;
+        return $this->relationLoaded('patientProfile') ? $this->patientProfile?->emergency_contact_phone : null;
     }
 }

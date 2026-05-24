@@ -40,7 +40,7 @@ class AuthController extends Controller
 
         if ($user->isAdmin()) {
             $token = $user->createToken('api-token')->plainTextToken;
-            return response()->json(['user' => $user, 'token' => $token]);
+            return response()->json(['user' => $user->load(['doctorProfile', 'patientProfile']), 'token' => $token]);
         }
 
         $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -77,7 +77,7 @@ class AuthController extends Controller
         Cache::forget("otp:login:{$user->id}");
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json(['user' => $user, 'token' => $token]);
+        return response()->json(['user' => $user->load(['doctorProfile', 'patientProfile']), 'token' => $token]);
     }
 
     // ─── Register ─────────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json(['user' => $user, 'token' => $token]);
+        return response()->json(['user' => $user->load(['doctorProfile', 'patientProfile']), 'token' => $token]);
     }
 
     /**
@@ -186,7 +186,7 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load(['doctorProfile', 'patientProfile']));
     }
 
     public function updateProfile(Request $request): JsonResponse
@@ -253,7 +253,7 @@ class AuthController extends Controller
             }
         }
 
-        return response()->json($user->fresh());
+        return response()->json($user->fresh()->load(['doctorProfile', 'patientProfile']));
     }
 
     public function changePassword(Request $request): JsonResponse

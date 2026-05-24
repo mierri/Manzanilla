@@ -9,11 +9,9 @@ import { CalendarReport } from './components/CalendarReport';
 import { HistoryReport } from './components/HistoryReport';
 import { downloadReportPDF } from './components/ReportPDF';
 
-interface Props { onNavigate: (id: string, params?: Record<string, unknown>) => void; }
-
 type Tab = 'overview' | 'pacientes' | 'calendario' | 'historia';
 
-export default function Reportes({ onNavigate: _onNavigate }: Props) {
+export default function Reportes() {
   const toast = useToast();
   const [tab,        setTab]       = useState<Tab>('overview');
   const [patients,   setPatients]  = useState<Patient[]>([]);
@@ -36,7 +34,7 @@ export default function Reportes({ onNavigate: _onNavigate }: Props) {
     setPdfLoading(true);
     try {
       await downloadReportPDF({ patients, appts, type: tab, historyPatientId });
-      toast.push({ tone: 'sage', title: 'PDF descargado', body: 'Reporte guardado en tus descargas' });
+      toast.push({ tone: 'sage', title: 'Reporte listo', body: 'Se abrió una nueva pestaña · usa Ctrl+P para guardar como PDF' });
     } catch (e) {
       console.error(e);
       toast.push({ tone: 'danger', title: 'Error al generar PDF', body: (e as Error).message });
@@ -62,7 +60,7 @@ export default function Reportes({ onNavigate: _onNavigate }: Props) {
             <Printer size={16} /> Imprimir
           </button>
           <button className="btn btn-primary no-print" disabled={pdfLoading} onClick={handleDownloadPDF}>
-            <Download size={16} /> {pdfLoading ? 'Generando…' : 'Descargar PDF'}
+            <Download size={16} /> {pdfLoading ? 'Generando…' : 'Exportar PDF'}
           </button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Plus, Lock, X, Bell } from 'lucide-react';
 import { appointmentsApi } from '@/lib/api';
 import { cached, invalidate } from '@/lib/cache';
@@ -7,8 +8,6 @@ import { Modal } from '@/components/ui/Modal';
 import { fmtDate, parseApptDate } from '@/lib/utils';
 import type { Appointment } from '@/types';
 import { NewAppointmentModal } from '@/features/appointments/NewAppointmentModal';
-
-interface Props { onNavigate: (id: string, params?: Record<string, unknown>) => void; }
 
 function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
 function startOfWeek(d: Date) { const r = new Date(d); r.setDate(r.getDate() - r.getDay() + 1); r.setHours(0, 0, 0, 0); return r; }
@@ -27,7 +26,8 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default function Citas({ onNavigate }: Props) {
+export default function Citas() {
+  const navigate = useNavigate();
   const toast = useToast();
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [appts, setAppts] = useState<Appointment[]>([]);
@@ -188,7 +188,7 @@ export default function Citas({ onNavigate }: Props) {
               <Info label="Estado"  value={{ pending: 'Por confirmar', confirmed: 'Confirmada', cancelled: 'Cancelada', completed: 'Terminada', locked: 'Bloqueada' }[selected.status] ?? selected.status} />
             </div>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-              <button className="btn btn-secondary" onClick={() => { setSelected(null); onNavigate('historia', { patientId: selected.patient_id }); }}>Ver historia</button>
+              <button className="btn btn-secondary" onClick={() => { setSelected(null); navigate(`/historia/${selected.patient_id}`); }}>Ver historia</button>
               {selected.patient_id && selected.status !== 'completed' && <button className="btn btn-secondary" onClick={() => handleRemind(selected.id)}><Bell size={14} /> Recordatorio</button>}
               {selected.status === 'pending' && <button className="btn btn-primary" onClick={() => handleConfirm(selected.id)}>Confirmar cita</button>}
               {selected.status !== 'completed' && <button className="btn btn-danger" style={{ padding: '9px 16px', borderRadius: 'var(--r-pill)' }} onClick={() => handleDelete(selected.id)}><X size={14} /> Cancelar cita</button>}

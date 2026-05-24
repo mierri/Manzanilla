@@ -57,7 +57,7 @@ export default function LoginPage() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: 6, fontSize: 12, color: 'var(--ink-soft)' }}>
-            <span>© 2026 Consultorio Manzanilla</span><span>· GDL</span>
+            <span>© 2026 Consultorio Manzanilla</span><span>· MID</span>
           </div>
         </div>
       </div>

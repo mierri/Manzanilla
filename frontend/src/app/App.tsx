@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Bell, X as CloseIcon } from 'lucide-react';
-import { useLoginReminder } from '@/hooks/useLoginReminder';
+import { type ReactNode } from 'react';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@/app/AuthContext';
 import { ToastProvider } from '@/app/ToastContext';
 import { AppShell } from '@/components/layout/AppShell';
@@ -19,103 +18,106 @@ import AdminMedicos     from '@/features/admin/Medicos';
 import AdminPacientes   from '@/features/admin/Pacientes';
 import AdminAgenda      from '@/features/admin/Agenda';
 import AdminPerfil      from '@/features/admin/Perfil';
+import type { Role } from '@/types';
 
-type Screen = string;
-interface Route { screen: Screen; params: Record<string, unknown>; }
-
-const ROUTE_KEY = 'manzanilla_route';
-
-function readRoute(): Route {
-  try {
-    const saved = sessionStorage.getItem(ROUTE_KEY);
-    return saved ? JSON.parse(saved) : { screen: 'dashboard', params: {} };
-  } catch {
-    return { screen: 'dashboard', params: {} };
-  }
+// Redirige a /login si no hay sesión
+function ProtectedRoute() {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Outlet />;
 }
 
-function saveRoute(r: Route) {
-  try { sessionStorage.setItem(ROUTE_KEY, JSON.stringify(r)); } catch { /* silent */ }
+// Redirige a /dashboard si ya hay sesión (para la página de login)
+function GuestRoute({ children }: { children: ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return null;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
 }
 
-const SCREEN_LABELS_MEDICO: Record<string, string> = {
-  dashboard: 'Inicio', pacientes: 'Pacientes', citas: 'Agenda',
-  historia: 'Historias', reportes: 'Reportes',
-};
-const SCREEN_LABELS_PACIENTE: Record<string, string> = {
-  dashboard: 'Mi inicio', citas: 'Mis citas',
-  historia: 'Mi historia', perfil: 'Mi perfil',
-};
-const SCREEN_LABELS_ADMIN: Record<string, string> = {
-  dashboard: 'Panel', medicos: 'Médicos',
-  pacientes: 'Pacientes', agenda: 'Agenda global', perfil: 'Mi perfil',
-};
-
-function AppContent() {
+// Redirige a /dashboard si el rol del usuario no está en la lista permitida
+function RoleGuard({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { user } = useAuth();
-  const [route, setRoute] = useState<Route>(readRoute);
-  const { showDismissToast, handleDismissToday, handleDismissToast } = useLoginReminder(user);
+  if (!user || !roles.includes(user.role as Role)) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
 
-  useEffect(() => {
-    if (!user) saveRoute({ screen: 'dashboard', params: {} });
-  }, [user]);
+// Renderiza un componente distinto según el rol. Si el rol no tiene componente, redirige a /dashboard.
+function ByRole({ medico, paciente, admin }: { medico?: ReactNode; paciente?: ReactNode; admin?: ReactNode }) {
+  const { user } = useAuth();
+  const node = user?.role === 'medico' ? medico : user?.role === 'paciente' ? paciente : admin;
+  return node ? <>{node}</> : <Navigate to="/dashboard" replace />;
+}
 
-  const goTo = (screen: Screen, params: Record<string, unknown> = {}) => {
-    const r = { screen, params };
-    setRoute(r);
-    saveRoute(r);
-  };
-
-  if (!user) return <LoginPage />;
-
-  const isPaciente = user.role === 'paciente';
-  const isAdmin    = user.role === 'admin';
-  const labels     = isPaciente ? SCREEN_LABELS_PACIENTE : isAdmin ? SCREEN_LABELS_ADMIN : SCREEN_LABELS_MEDICO;
-  const screenLabel = labels[route.screen] ?? 'Manzanilla';
-
-  const validScreens = isPaciente
-    ? ['dashboard', 'citas', 'historia', 'perfil']
-    : isAdmin
-    ? ['dashboard', 'medicos', 'pacientes', 'agenda', 'perfil']
-    : ['dashboard', 'pacientes', 'citas', 'historia', 'reportes'];
-
-  const safeScreen = validScreens.includes(route.screen) ? route.screen : 'dashboard';
-
+function AppRoutes() {
   return (
-    <AppShell current={safeScreen} onNavigate={goTo} screenLabel={screenLabel}>
-      {showDismissToast && (
-        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999, background: 'var(--card)', border: '1px solid var(--hairline)', borderRadius: 16, padding: '14px 18px', boxShadow: 'var(--shadow-lg)', display: 'flex', alignItems: 'center', gap: 14, maxWidth: 420, width: 'calc(100vw - 32px)' }}>
-          <Bell size={18} color="var(--ink-soft)" style={{ flexShrink: 0 }} />
-          <span style={{ flex: 1, fontSize: 13.5, color: 'var(--ink)' }}>¿No quieres más recordatorios hoy?</span>
-          <button className="btn btn-secondary" style={{ fontSize: 12, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={handleDismissToday}>No recordar hoy</button>
-          <button className="btn-ghost" style={{ fontSize: 12, padding: '6px 8px', color: 'var(--muted)', display: 'flex', alignItems: 'center' }} onClick={handleDismissToast}><CloseIcon size={14} /></button>
-        </div>
-      )}
-      {isPaciente ? (
-        <>
-          {safeScreen === 'dashboard' && <PatientDashboard onNavigate={goTo} />}
-          {safeScreen === 'citas'     && <PatientCitas />}
-          {safeScreen === 'historia'  && <PatientHistoria />}
-          {safeScreen === 'perfil'    && <PatientPerfil />}
-        </>
-      ) : isAdmin ? (
-        <>
-          {safeScreen === 'dashboard' && <AdminDashboard onNavigate={goTo} />}
-          {safeScreen === 'medicos'   && <AdminMedicos />}
-          {safeScreen === 'pacientes' && <AdminPacientes />}
-          {safeScreen === 'agenda'    && <AdminAgenda />}
-          {safeScreen === 'perfil'    && <AdminPerfil />}
-        </>
-      ) : (
-        <>
-          {safeScreen === 'dashboard' && <DoctorDashboard onNavigate={goTo} />}
-          {safeScreen === 'pacientes' && <Pacientes onNavigate={goTo} />}
-          {safeScreen === 'citas'     && <Citas onNavigate={goTo} />}
-          {safeScreen === 'historia'  && <Historia onNavigate={goTo} patientId={route.params.patientId as number | undefined} appointmentId={route.params.appointmentId as number | undefined} />}
-          {safeScreen === 'reportes'  && <Reportes onNavigate={goTo} />}
-        </>
-      )}
-    </AppShell>
+    <Routes>
+      {/* Pública */}
+      <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+
+      {/* Protegidas — envueltas en AppShell (layout con Outlet) */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route path="/dashboard" element={
+            <ByRole
+              medico={<DoctorDashboard />}
+              paciente={<PatientDashboard />}
+              admin={<AdminDashboard />}
+            />
+          } />
+
+          <Route path="/pacientes" element={
+            <RoleGuard roles={['medico', 'admin']}>
+              <ByRole medico={<Pacientes />} admin={<AdminPacientes />} />
+            </RoleGuard>
+          } />
+
+          <Route path="/citas" element={
+            <RoleGuard roles={['medico', 'paciente']}>
+              <ByRole medico={<Citas />} paciente={<PatientCitas />} />
+            </RoleGuard>
+          } />
+
+          {/* Historia con patientId opcional en la URL */}
+          <Route path="/historia" element={
+            <RoleGuard roles={['medico', 'paciente']}>
+              <ByRole medico={<Historia />} paciente={<PatientHistoria />} />
+            </RoleGuard>
+          } />
+          <Route path="/historia/:patientId" element={
+            <RoleGuard roles={['medico']}>
+              <Historia />
+            </RoleGuard>
+          } />
+
+          <Route path="/reportes" element={
+            <RoleGuard roles={['medico']}><Reportes /></RoleGuard>
+          } />
+
+          <Route path="/medicos" element={
+            <RoleGuard roles={['admin']}><AdminMedicos /></RoleGuard>
+          } />
+
+          <Route path="/agenda" element={
+            <RoleGuard roles={['admin']}><AdminAgenda /></RoleGuard>
+          } />
+
+          <Route path="/perfil" element={
+            <RoleGuard roles={['paciente', 'admin']}>
+              <ByRole paciente={<PatientPerfil />} admin={<AdminPerfil />} />
+            </RoleGuard>
+          } />
+
+          {/* Fallbacks */}
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Route>
+      </Route>
+
+      {/* Raíz → dashboard (redirige según auth en ProtectedRoute/GuestRoute) */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
   );
 }
 
@@ -123,7 +125,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ToastProvider>
-        <AppContent />
+        <AppRoutes />
       </ToastProvider>
     </AuthProvider>
   );

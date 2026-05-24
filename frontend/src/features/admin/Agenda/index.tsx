@@ -17,21 +17,21 @@ export default function AdminAgenda() {
   const [doctorFilter, setDoctorFilter] = useState<number | ''>('');
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  const load = () => {
-    setLoading(true);
-    Promise.all([
-      adminApi.listAppointments({
-        ...(doctorFilter ? { doctor_id: doctorFilter as number } : {}),
-        ...(statusFilter ? { status: statusFilter } : {}),
-      }),
-      adminApi.listDoctors(),
-    ]).then(([aRes, dRes]) => {
-      setAppts(aRes.data as ApptWithNames[]);
-      setDoctors(dRes.data);
-    }).finally(() => setLoading(false));
-  };
+  // Carga médicos una sola vez al montar
+  useEffect(() => {
+    adminApi.listDoctors().then(r => setDoctors(r.data));
+  }, []);
 
-  useEffect(() => { load(); }, [doctorFilter, statusFilter]);
+  // Carga citas al cambiar filtros
+  useEffect(() => {
+    setLoading(true);
+    adminApi.listAppointments({
+      ...(doctorFilter ? { doctor_id: doctorFilter as number } : {}),
+      ...(statusFilter ? { status: statusFilter } : {}),
+    })
+      .then(r => setAppts(r.data as ApptWithNames[]))
+      .finally(() => setLoading(false));
+  }, [doctorFilter, statusFilter]);
 
   const upcoming = appts
     .filter(a => parseApptDate(a.appointment_date) >= new Date() && a.status !== 'cancelled')

@@ -105,7 +105,7 @@ class AdminController extends Controller
             'bio'            => $data['bio'] ?? null,
         ]);
 
-        return response()->json($doctor->fresh(), 201);
+        return response()->json($doctor->fresh()->load(['doctorProfile']), 201);
     }
 
     public function updateDoctor(Request $request, int $id): JsonResponse
@@ -145,7 +145,7 @@ class AdminController extends Controller
             );
         }
 
-        return response()->json($doctor->fresh());
+        return response()->json($doctor->fresh()->load(['doctorProfile']));
     }
 
     public function deleteDoctor(Request $request, int $id): JsonResponse

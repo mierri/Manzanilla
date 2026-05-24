@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, FileText, Heart, Plus, Sparkles } from 'lucide-react';
 import { useAuth } from '@/app/AuthContext';
 import { useToast } from '@/app/ToastContext';
@@ -18,9 +19,8 @@ function fmtNextAppt(dateStr: string) {
   return `${DAYS_ES[d.getDay()]} ${d.getDate()} de ${MONTHS_ES[d.getMonth()]} a las ${fmtTime(dateStr)}`;
 }
 
-interface Props { onNavigate: (id: string) => void; }
-
-export default function PatientDashboard({ onNavigate }: Props) {
+export default function PatientDashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const toast = useToast();
   const [appts,   setAppts]   = useState<Appointment[]>([]);
@@ -57,9 +57,9 @@ export default function PatientDashboard({ onNavigate }: Props) {
   }
 
   const stats = [
-    { label: 'Próximas citas',   value: upcoming.length, sub: 'este mes',         Icon: Calendar, tone: 'sage',   action: () => onNavigate('citas')    },
-    { label: 'Visitas en el año', value: pastCount,       sub: 'consultas previas', Icon: FileText, tone: 'butter', action: () => onNavigate('historia') },
-    { label: 'Consultas totales', value: records.length,  sub: 'historial clínico', Icon: Heart,    tone: 'blush',  action: () => onNavigate('historia') },
+    { label: 'Próximas citas',   value: upcoming.length, sub: 'este mes',         Icon: Calendar, tone: 'sage',   action: () => navigate('/citas')    },
+    { label: 'Visitas en el año', value: pastCount,       sub: 'consultas previas', Icon: FileText, tone: 'butter', action: () => navigate('/historia') },
+    { label: 'Consultas totales', value: records.length,  sub: 'historial clínico', Icon: Heart,    tone: 'blush',  action: () => navigate('/historia') },
   ];
 
   return (
@@ -76,13 +76,13 @@ export default function PatientDashboard({ onNavigate }: Props) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-secondary" onClick={() => onNavigate('historia')}><FileText size={16} /> Mi historia</button>
+          <button className="btn btn-secondary" onClick={() => navigate('/historia')}><FileText size={16} /> Mi historia</button>
           <button className="btn btn-primary" onClick={() => setBookingOpen(true)}><Plus size={16} /> Agendar cita</button>
         </div>
       </div>
 
       {next && (
-        <NextAppointmentCard appt={next} onReschedule={() => onNavigate('citas')}
+        <NextAppointmentCard appt={next} onReschedule={() => navigate('/citas')}
           onCancel={async () => {
             try {
               await appointmentsApi.delete(next.id);
@@ -116,7 +116,7 @@ export default function PatientDashboard({ onNavigate }: Props) {
               <div className="section-title" style={{ marginBottom: 2 }}>Lo último de tu salud <span className="count">{recentRecords.length} consultas</span></div>
               <div style={{ fontSize: 12.5, color: 'var(--ink-soft)' }}>Resumen de tus últimas consultas</div>
             </div>
-            <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => onNavigate('historia')}>Ver historia</button>
+            <button className="btn-ghost" style={{ fontSize: 12 }} onClick={() => navigate('/historia')}>Ver historia</button>
           </div>
           <div style={{ padding: '0 14px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
             {!loading && recentRecords.length === 0 && <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--muted)', fontSize: 13 }}>Sin consultas registradas aún.</div>}
@@ -124,7 +124,7 @@ export default function PatientDashboard({ onNavigate }: Props) {
               <button key={i} style={{ display: 'flex', gap: 12, padding: '12px 8px', borderRadius: 12, transition: 'background .2s var(--ease)', textAlign: 'left', width: '100%' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--card-tint)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                onClick={() => onNavigate('historia')}>
+                onClick={() => navigate('/historia')}>
                 <div style={{ width: 32, height: 32, borderRadius: 10, background: 'var(--sage)', display: 'grid', placeItems: 'center', flexShrink: 0 }}><FileText size={14} color="#3C5A3F" /></div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{r.diagnosis?.split('.')[0] || 'Consulta'}</div>

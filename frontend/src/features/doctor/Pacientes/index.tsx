@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Download, LayoutGrid, List } from 'lucide-react';
 import { patientsApi } from '@/lib/api';
 import { cached, invalidate } from '@/lib/cache';
@@ -9,9 +10,8 @@ import { PatientCard } from './components/PatientCard';
 import { PatientRow } from './components/PatientRow';
 import { PatientForm } from './components/PatientForm';
 
-interface Props { onNavigate: (id: string, params?: Record<string, unknown>) => void; }
-
-export default function Pacientes({ onNavigate }: Props) {
+export default function Pacientes() {
+  const navigate = useNavigate();
   const toast   = useToast();
   const [patients,  setPatients]  = useState<Patient[]>([]);
   const [query,     setQuery]     = useState('');
@@ -125,7 +125,7 @@ export default function Pacientes({ onNavigate }: Props) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(248px, 1fr))', gap: 16 }} className="resp-patients-5">
           {filtered.map(p => (
             <PatientCard key={p.id} patient={p}
-              onView={() => onNavigate('historia', { patientId: p.id })}
+              onView={() => navigate(`/historia/${p.id}`)}
               onEdit={() => setEditing(p)}
               onDelete={() => setDeleting(p)}
             />
@@ -135,7 +135,7 @@ export default function Pacientes({ onNavigate }: Props) {
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           {filtered.map((p, i) => (
             <PatientRow key={p.id} patient={p} first={i === 0}
-              onView={() => onNavigate('historia', { patientId: p.id })}
+              onView={() => navigate(`/historia/${p.id}`)}
               onEdit={() => setEditing(p)}
             />
           ))}

@@ -1,39 +1,32 @@
-﻿import { Home, Users, Calendar, FileText, BarChart2, User, Heart, Stethoscope, LogOut, X, Sparkles, Menu, ShieldCheck, Settings } from 'lucide-react';
+import { Home, Users, Calendar, FileText, BarChart2, User, Heart, Stethoscope, LogOut, X, Sparkles, Menu, ShieldCheck, Settings } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/app/AuthContext';
 import type { Role } from '@/types';
 
-interface NavItem { id: string; label: string; Icon: React.ElementType; }
+interface NavItem { id: string; label: string; path: string; Icon: React.ElementType; }
 
 const NAV_BY_ROLE: Record<Role, NavItem[]> = {
   medico: [
-    { id: 'dashboard', label: 'Inicio',    Icon: Home     },
-    { id: 'pacientes', label: 'Pacientes', Icon: Users    },
-    { id: 'citas',     label: 'Agenda',    Icon: Calendar },
-    { id: 'historia',  label: 'Historias', Icon: FileText },
-    { id: 'reportes',  label: 'Reportes',  Icon: BarChart2 },
+    { id: 'dashboard', label: 'Inicio',    path: '/dashboard', Icon: Home      },
+    { id: 'pacientes', label: 'Pacientes', path: '/pacientes', Icon: Users     },
+    { id: 'citas',     label: 'Agenda',    path: '/citas',     Icon: Calendar  },
+    { id: 'historia',  label: 'Historias', path: '/historia',  Icon: FileText  },
+    { id: 'reportes',  label: 'Reportes',  path: '/reportes',  Icon: BarChart2 },
   ],
   paciente: [
-    { id: 'dashboard', label: 'Mi inicio',   Icon: Home     },
-    { id: 'citas',     label: 'Mis citas',   Icon: Calendar },
-    { id: 'historia',  label: 'Mi historia', Icon: FileText },
-    { id: 'perfil',    label: 'Mi perfil',   Icon: User     },
+    { id: 'dashboard', label: 'Mi inicio',   path: '/dashboard', Icon: Home     },
+    { id: 'citas',     label: 'Mis citas',   path: '/citas',     Icon: Calendar },
+    { id: 'historia',  label: 'Mi historia', path: '/historia',  Icon: FileText },
+    { id: 'perfil',    label: 'Mi perfil',   path: '/perfil',    Icon: User     },
   ],
   admin: [
-    { id: 'dashboard', label: 'Panel',      Icon: Home        },
-    { id: 'medicos',   label: 'Médicos',    Icon: Stethoscope },
-    { id: 'pacientes', label: 'Pacientes',  Icon: Users       },
-    { id: 'agenda',    label: 'Agenda',     Icon: Calendar    },
-    { id: 'perfil',    label: 'Mi perfil',  Icon: Settings    },
+    { id: 'dashboard', label: 'Panel',      path: '/dashboard', Icon: Home        },
+    { id: 'medicos',   label: 'Médicos',    path: '/medicos',   Icon: Stethoscope },
+    { id: 'pacientes', label: 'Pacientes',  path: '/pacientes', Icon: Users       },
+    { id: 'agenda',    label: 'Agenda',     path: '/agenda',    Icon: Calendar    },
+    { id: 'perfil',    label: 'Mi perfil',  path: '/perfil',    Icon: Settings    },
   ],
 };
-
-interface Props {
-  current: string;
-  onNavigate: (id: string) => void;
-  isOpen: boolean;
-  onClose: () => void;
-  nextAppt?: string;
-}
 
 // Manzanilla logo mark
 const ManzanillaMark = ({ size = 32 }: { size?: number }) => (
@@ -49,13 +42,33 @@ const ManzanillaMark = ({ size = 32 }: { size?: number }) => (
   </svg>
 );
 
-export function Sidebar({ current, onNavigate, isOpen, onClose, nextAppt }: Props) {
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function Sidebar({ isOpen, onClose }: Props) {
   const { user, logout } = useAuth();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
   if (!user) return null;
+
   const isPaciente = user.role === 'paciente';
   const isAdmin    = user.role === 'admin';
-  const NAV_ITEMS  = NAV_BY_ROLE[user.role] ?? NAV_BY_ROLE.medico;
+  const NAV_ITEMS  = NAV_BY_ROLE[user.role as Role] ?? NAV_BY_ROLE.medico;
   const accent     = isPaciente ? 'sage' : isAdmin ? 'lavender' : 'butter';
+
+  // Activo cuando la ruta actual empieza con el path del item
+  const isActive = (path: string) => {
+    if (path === '/dashboard') return location.pathname === '/dashboard';
+    return location.pathname.startsWith(path);
+  };
+
+  const handleNav = (path: string) => {
+    navigate(path);
+    onClose();
+  };
 
   return (
     <aside style={s.shell} className={isOpen ? 'is-open' : ''}>
@@ -75,8 +88,8 @@ export function Sidebar({ current, onNavigate, isOpen, onClose, nextAppt }: Prop
 
       {/* Nav */}
       <nav style={s.nav}>
-        {NAV_ITEMS.map(({ id, label, Icon }) => {
-          const active = current === id;
+        {NAV_ITEMS.map(({ id, label, path, Icon }) => {
+          const active = isActive(path);
           return (
             <button
               key={id}
@@ -84,7 +97,7 @@ export function Sidebar({ current, onNavigate, isOpen, onClose, nextAppt }: Prop
                 ...s.navItem,
                 ...(active ? { ...s.navItemActive, ...(isPaciente ? s.navItemActivePaciente : isAdmin ? s.navItemActiveAdmin : {}) } : {}),
               }}
-              onClick={() => { onNavigate(id); onClose(); }}
+              onClick={() => handleNav(path)}
               onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(43,37,32,0.04)'; }}
               onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
             >
@@ -104,7 +117,7 @@ export function Sidebar({ current, onNavigate, isOpen, onClose, nextAppt }: Prop
             <span style={{ fontSize: 11, fontWeight: 600, color: '#3C5A3F', letterSpacing: '.05em', textTransform: 'uppercase' }}>Tu próxima cita</span>
           </div>
           <div className="serif" style={{ fontSize: 14.5, lineHeight: 1.35, color: 'var(--ink)' }}>
-            {nextAppt || <em style={{ color: '#3C5A3F' }}>Sin citas pendientes</em>}
+            <em style={{ color: '#3C5A3F' }}>Sin citas pendientes</em>
           </div>
         </div>
       ) : isAdmin ? (
