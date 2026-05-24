@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Download, LayoutGrid, List } from 'lucide-react';
+import { Search, Plus, LayoutGrid, List } from 'lucide-react';
 import { patientsApi } from '@/lib/api';
 import { cached, invalidate } from '@/lib/cache';
 import { useToast } from '@/app/ToastContext';
@@ -81,10 +81,7 @@ export default function Pacientes() {
           <h1 className="page-title">Tu <em>directorio</em> de pacientes</h1>
           <p className="page-subtitle">{filtered.length} pacientes · ordenados por ultima visita</p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn btn-secondary"><Download size={16} /> Exportar</button>
-          <button className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={16} /> Nuevo paciente</button>
-        </div>
+        <button className="btn btn-primary" onClick={() => setCreating(true)}><Plus size={16} /> Nuevo paciente</button>
       </div>
 
       {/* Search + filters bar */}

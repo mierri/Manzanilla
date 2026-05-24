@@ -12,9 +12,17 @@ class ReportController extends Controller
 {
     public function patients(Request $request): JsonResponse
     {
-        abort_if($request->user()->isPatient(), 403);
+        $user = $request->user();
+        abort_if($user->isPatient(), 403);
 
-        $patients = User::where('role', 'paciente')
+        $query = User::where('role', 'paciente');
+
+        if ($user->isDoctor()) {
+            $associatedIds = $user->associatedPatients()->pluck('users.id');
+            $query->whereIn('id', $associatedIds);
+        }
+
+        $patients = $query
             ->withCount(['clinicalRecords as notes_count'])
             ->addSelect([
                 'last_visit' => Appointment::select('appointment_date')
